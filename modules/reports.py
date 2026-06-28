@@ -2,9 +2,71 @@ from __future__ import annotations
 
 import csv
 import tkinter as tk
+from typing import Any, Callable
 from tkinter import filedialog, messagebox, ttk
 
 from modules.base import BaseModuleFrame, COLORS, FONTS
+
+
+REPORT_COLUMNS = {
+    "Available Books": [
+        "book_code",
+        "title",
+        "author",
+        "category",
+        "publisher",
+        "isbn",
+        "quantity",
+        "available_quantity",
+        "shelf_location",
+        "added_date",
+    ],
+    "Issued Books": [
+        "id",
+        "book_code",
+        "title",
+        "member_code",
+        "member_name",
+        "issue_date",
+        "due_date",
+        "return_date",
+        "status",
+        "fine_amount",
+    ],
+    "Overdue Books": [
+        "id",
+        "book_code",
+        "title",
+        "member_code",
+        "member_name",
+        "issue_date",
+        "due_date",
+        "status",
+        "fine_amount",
+    ],
+    "Member Report": [
+        "member_code",
+        "name",
+        "email",
+        "phone",
+        "address",
+        "join_date",
+    ],
+    "Fine Report": [
+        "id",
+        "book_code",
+        "title",
+        "member_code",
+        "member_name",
+        "issue_date",
+        "due_date",
+        "return_date",
+        "status",
+        "fine_amount",
+    ],
+}
+
+MONEY_COLUMNS = {"fine_amount"}
 
 
 class ReportsFrame(BaseModuleFrame):
@@ -33,13 +95,7 @@ class ReportsFrame(BaseModuleFrame):
         self.report_combo = ttk.Combobox(
             controls,
             textvariable=self.report_var,
-            values=[
-                "Available Books",
-                "Issued Books",
-                "Overdue Books",
-                "Member Report",
-                "Fine Report",
-            ],
+            values=list(REPORT_COLUMNS.keys()),
             state="readonly",
             width=22,
         )
@@ -88,128 +144,26 @@ class ReportsFrame(BaseModuleFrame):
         self.tree.configure(yscrollcommand=scrollbar.set)
         scrollbar.pack(side="right", fill="y")
 
-    def _report_definitions(self) -> dict:
+    def _report_loaders(self) -> dict[str, Callable[[], list[dict[str, Any]]]]:
         return {
-            "Available Books": {
-                "columns": [
-                    "book_code",
-                    "title",
-                    "author",
-                    "category",
-                    "publisher",
-                    "isbn",
-                    "quantity",
-                    "available_quantity",
-                    "shelf_location",
-                    "added_date",
-                ],
-                "loader": self.db.report_available_books,
-            },
-            "Issued Books": {
-                "columns": [
-                    "id",
-                    "book_code",
-                    "title",
-                    "member_code",
-                    "member_name",
-                    "issue_date",
-                    "due_date",
-                    "return_date",
-                    "status",
-                    "fine_amount",
-                ],
-                "loader": self.db.report_issued_books,
-            },
-            "Overdue Books": {
-                "columns": [
-                    "id",
-                    "book_code",
-                    "title",
-                    "member_code",
-                    "member_name",
-                    "issue_date",
-                    "due_date",
-                    "status",
-                    "fine_amount",
-                ],
-                "loader": self.db.report_overdue_books,
-            },
-            "Member Report": {
-                "columns": ["member_code", "name", "email", "phone", "address", "join_date"],
-                "loader": self.db.report_members,
-            },
-            "Fine Report": {
-                "columns": [
-                    "id",
-                    "book_code",
-                    "title",
-                    "member_code",
-                    "member_name",
-                    "issue_date",
-                    "due_date",
-                    "return_date",
-                    "status",
-                    "fine_amount",
-                ],
-                "loader": self.db.report_fines,
-            },
+            "Available Books": self.db.report_available_books,
+            "Issued Books": self.db.report_issued_books,
+            "Overdue Books": self.db.report_overdue_books,
+            "Member Report": self.db.report_members,
+            "Fine Report": self.db.report_fines,
         }
 
-    def _format_row(self, report_name: str, row: dict) -> tuple:
-        if report_name == "Available Books":
-            return (
-                row["book_code"],
-                row["title"],
-                row["author"],
-                row["category"],
-                row["publisher"],
-                row["isbn"],
-                row["quantity"],
-                row["available_quantity"],
-                row["shelf_location"],
-                row["added_date"],
-            )
-        if report_name in {"Issued Books", "Fine Report"}:
-            return (
-                row["id"],
-                row["book_code"],
-                row["title"],
-                row["member_code"],
-                row["member_name"],
-                row["issue_date"],
-                row["due_date"],
-                row["return_date"] or "",
-                row["status"],
-                f"Tk {row['fine_amount']:.2f}",
-            )
-        if report_name == "Overdue Books":
-            return (
-                row["id"],
-                row["book_code"],
-                row["title"],
-                row["member_code"],
-                row["member_name"],
-                row["issue_date"],
-                row["due_date"],
-                row["status"],
-                f"Tk {row['fine_amount']:.2f}",
-            )
-        if report_name == "Member Report":
-            return (
-                row["member_code"],
-                row["name"],
-                row["email"] or "",
-                row["phone"] or "",
-                row["address"],
-                row["join_date"],
-            )
-        return (
-            row["member_code"],
-            row["name"],
-            row["email"] or "",
-            row["phone"] or "",
-            row["address"],
-            row["join_date"],
+    def _format_cell(self, column: str, value: Any) -> Any:
+        if value is None:
+            return ""
+        if column in MONEY_COLUMNS:
+            return f"Tk {float(value):.2f}"
+        return value
+
+    def _format_row(self, row: dict[str, Any]) -> tuple[Any, ...]:
+        return tuple(
+            self._format_cell(column, row.get(column))
+            for column in self.current_columns
         )
 
     def _configure_tree(self, columns: list[str]) -> None:
@@ -222,10 +176,10 @@ class ReportsFrame(BaseModuleFrame):
 
     def load_report(self) -> None:
         report_name = self.report_var.get()
-        report_def = self._report_definitions()[report_name]
-        self.current_columns = report_def["columns"]
-        rows = report_def["loader"]()
-        self.current_rows = [self._format_row(report_name, row) for row in rows]
+        self.current_columns = REPORT_COLUMNS[report_name]
+        loader = self._report_loaders()[report_name]
+        rows = loader()
+        self.current_rows = [self._format_row(row) for row in rows]
         self._configure_tree(self.current_columns)
         for row in self.current_rows:
             self.tree.insert("", "end", values=row)
