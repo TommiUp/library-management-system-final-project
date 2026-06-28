@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import tkinter as tk
 from tkinter import ttk
-from typing import Iterable, Sequence
+from typing import Callable, Iterable, Sequence
 
 
 COLORS = {
@@ -42,8 +42,6 @@ class BaseModuleFrame(tk.Frame):
         self.app = app
         self.db = db
         self.selected_id = None
-        self._sort_column = None
-        self._sort_ascending = True
 
     def build_heading(self, title: str, subtitle: str = "") -> tk.Frame:
         container = tk.Frame(self, bg=COLORS["bg"])
@@ -94,7 +92,125 @@ class BaseModuleFrame(tk.Frame):
             font=FONTS["card_value"],
         )
         value_label.pack(anchor="w", padx=16, pady=(0, 16))
+        
         return card
+    
+    def build_search_bar(
+        self,
+        fields: Sequence[str],
+        field_var: tk.StringVar,
+        text_var: tk.StringVar,
+        on_search: Callable[[], None],
+        on_reset: Callable[[], None],
+        default_field: str | None = None,
+    ) -> tk.Frame:
+        search_bar = tk.Frame(self, bg=COLORS["panel"], padx=18, pady=14)
+        search_bar.pack(fill="x", padx=24, pady=(0, 16))
+
+        if default_field is not None:
+            field_var.set(default_field)
+
+        tk.Label(
+            search_bar,
+            text="Search By",
+            bg=COLORS["panel"],
+            fg=COLORS["text"],
+            font=FONTS["body"],
+        ).grid(row=0, column=0, sticky="w", padx=6)
+
+        search_field = ttk.Combobox(
+            search_bar,
+            textvariable=field_var,
+            values=list(fields),
+            state="readonly",
+            width=16,
+        )
+        search_field.grid(row=0, column=1, padx=6, pady=6)
+
+        tk.Label(
+            search_bar,
+            text="Keyword",
+            bg=COLORS["panel"],
+            fg=COLORS["text"],
+            font=FONTS["body"],
+        ).grid(row=0, column=2, sticky="w", padx=6)
+
+        search_entry = tk.Entry(
+            search_bar,
+            textvariable=text_var,
+            width=28,
+            relief="flat",
+        )
+        search_entry.grid(row=0, column=3, padx=6, pady=6)
+
+        tk.Button(
+            search_bar,
+            text="Search",
+            command=on_search,
+            bg=COLORS["primary"],
+            fg="white",
+            activebackground=COLORS["primary_dark"],
+            relief="flat",
+            font=FONTS["button"],
+        ).grid(row=0, column=4, padx=6)
+
+        tk.Button(
+            search_bar,
+            text="Reset",
+            command=on_reset,
+            bg=COLORS["secondary"],
+            fg="white",
+            activebackground="#475569",
+            relief="flat",
+            font=FONTS["button"],
+        ).grid(row=0, column=5, padx=6)
+
+        search_bar.columnconfigure(6, weight=1)
+        self.search_field = search_field
+        self.search_entry = search_entry
+
+        return search_bar
+
+    def build_action_row(
+        self,
+        parent: tk.Widget,
+        row: int,
+        actions: Sequence[tuple[str, Callable[[], None], str]],
+        column: int = 0,
+        columnspan: int = 1,
+    ) -> tk.Frame:
+        action_row = tk.Frame(parent, bg=COLORS["panel"])
+        action_row.grid(
+            row=row,
+            column=column,
+            columnspan=columnspan,
+            sticky="ew",
+            padx=8,
+            pady=(12, 0),
+        )
+
+        action_row.columnconfigure(tuple(range(len(actions))), weight=1)
+
+        for index, (text, command, color) in enumerate(actions):
+            tk.Button(
+                action_row,
+                text=text,
+                command=command,
+                bg=color,
+                fg="white",
+                activebackground=color,
+                relief="flat",
+                font=FONTS["button"],
+            ).grid(row=0, column=index, sticky="ew", padx=3)
+
+        return action_row
+
+    def update_sort_state(self, column: str) -> None:
+        if self.sort_column == column:
+            self.sort_ascending = not self.sort_ascending
+        else:
+            self.sort_column = column
+            self.sort_ascending = True
 
     def labeled_entry(
         self,

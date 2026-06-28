@@ -49,27 +49,14 @@ class SettingsFrame(BaseModuleFrame):
         self.phone_entry = self.labeled_entry(form, "Phone", 4, 0, width=36)
         self.email_entry = self.labeled_entry(form, "Email", 6, 0, width=36)
 
-        button_row = tk.Frame(form, bg=COLORS["panel"])
-        button_row.grid(row=8, column=0, sticky="ew", padx=8, pady=(10, 0))
-        button_row.columnconfigure((0, 1), weight=1)
-        tk.Button(
-            button_row,
-            text="Save Library Info",
-            command=self.save_library_info,
-            bg=COLORS["primary"],
-            fg="white",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=0, sticky="ew", padx=4)
-        tk.Button(
-            button_row,
-            text="Backup Database",
-            command=self.backup_database,
-            bg=COLORS["success"],
-            fg="white",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=1, sticky="ew", padx=4)
+        self.build_action_row(
+            form,
+            row=8,
+            actions=[
+                ("Save Library Info", self.save_library_info, COLORS["primary"]),
+                ("Backup Database", self.backup_database, COLORS["success"]),
+            ],
+        )
 
         tk.Label(right, text="Security & Restore", bg=COLORS["panel"], fg=COLORS["text"], font=FONTS["heading"]).pack(
             anchor="w", pady=(0, 12), padx=2
@@ -82,28 +69,14 @@ class SettingsFrame(BaseModuleFrame):
         self.new_password_entry = self.labeled_entry(security, "New Password", 2, 0, width=36, show="*")
         self.confirm_password_entry = self.labeled_entry(security, "Confirm Password", 4, 0, width=36, show="*")
 
-        security_buttons = tk.Frame(security, bg=COLORS["panel"])
-        security_buttons.grid(row=6, column=0, sticky="ew", padx=8, pady=(10, 0))
-        security_buttons.columnconfigure((0, 1), weight=1)
-
-        tk.Button(
-            security_buttons,
-            text="Change Password",
-            command=self.change_password,
-            bg=COLORS["warning"],
-            fg="white",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=0, sticky="ew", padx=4)
-        tk.Button(
-            security_buttons,
-            text="Restore Database",
-            command=self.restore_database,
-            bg=COLORS["danger"],
-            fg="white",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=1, sticky="ew", padx=4)
+        self.build_action_row(
+            security,
+            row=6,
+            actions=[
+                ("Change Password", self.change_password, COLORS["warning"]),
+                ("Restore Database", self.restore_database, COLORS["danger"]),
+            ],
+        )
 
         note = tk.Label(
             right,
@@ -135,37 +108,57 @@ class SettingsFrame(BaseModuleFrame):
         self.phone_entry.insert(0, settings.get("phone", ""))
         self.email_entry.insert(0, settings.get("email", ""))
 
+    def _collect_library_settings(self) -> dict[str, str]:
+        return {
+            "library_name": self.library_name_entry.get().strip(),
+            "address": self.address_text.get("1.0", tk.END).strip(),
+            "phone": self.phone_entry.get().strip(),
+            "email": self.email_entry.get().strip(),
+        }
+
+    def _get_password_values(self) -> tuple[str, str, str]:
+        return (
+            self.current_password_entry.get().strip(),
+            self.new_password_entry.get().strip(),
+            self.confirm_password_entry.get().strip(),
+        )
+
+    def _validate_password_change(
+        self,
+        current_password: str,
+        new_password: str,
+        confirm_password: str,
+    ) -> bool:
+        if not current_password or not new_password or not confirm_password:
+            messagebox.showwarning("Validation Error", "All password fields are required.")
+            return False
+        if new_password != confirm_password:
+            messagebox.showwarning("Validation Error", "New password and confirmation do not match.")
+            return False
+        return True
+
     def save_library_info(self) -> None:
         try:
-            self.db.update_library_settings(
-                {
-                    "library_name": self.library_name_entry.get().strip(),
-                    "address": self.address_text.get("1.0", tk.END).strip(),
-                    "phone": self.phone_entry.get().strip(),
-                    "email": self.email_entry.get().strip(),
-                }
-            )
+            self.db.update_library_settings(self._collect_library_settings())
             self.app.refresh_header()
             messagebox.showinfo("Success", "Library information updated successfully.")
         except Exception as exc:
             messagebox.showerror("Error", str(exc))
 
     def change_password(self) -> None:
-        current_password = self.current_password_entry.get().strip()
-        new_password = self.new_password_entry.get().strip()
-        confirm_password = self.confirm_password_entry.get().strip()
-        if not current_password or not new_password or not confirm_password:
-            messagebox.showwarning("Validation Error", "All password fields are required.")
-            return
-        if new_password != confirm_password:
-            messagebox.showwarning("Validation Error", "New password and confirmation do not match.")
+        current_password, new_password, confirm_password = self._get_password_values()
+        if not self._validate_password_change(current_password, new_password, confirm_password):
             return
         username = self.app.current_user["username"]
         if not self.db.change_password(username, current_password, new_password):
             messagebox.showerror("Error", "Current password is incorrect.")
             return
         messagebox.showinfo("Success", "Password changed successfully.")
-        self.clear_entries(self.current_password_entry, self.new_password_entry, self.confirm_password_entry)
+        self.clear_entries(
+            self.current_password_entry,
+            self.new_password_entry,
+            self.confirm_password_entry,
+        )
 
     def backup_database(self) -> None:
         try:

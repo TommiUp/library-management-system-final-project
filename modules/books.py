@@ -3,7 +3,7 @@ from __future__ import annotations
 import tkinter as tk
 from tkinter import messagebox, ttk
 
-from modules.base import BaseModuleFrame, COLORS, FONTS
+from modules.base import BaseModuleFrame, COLORS
 
 
 class BooksFrame(BaseModuleFrame):
@@ -25,50 +25,14 @@ class BooksFrame(BaseModuleFrame):
             "Add, edit, delete, and search books. Book codes are generated automatically.",
         )
 
-        search_bar = tk.Frame(self, bg=COLORS["panel"], padx=18, pady=14)
-        search_bar.pack(fill="x", padx=24, pady=(0, 16))
-
-        tk.Label(search_bar, text="Search By", bg=COLORS["panel"], fg=COLORS["text"], font=FONTS["body"]).grid(
-            row=0, column=0, sticky="w", padx=6
+        self.build_search_bar(
+            fields=["title", "author", "isbn", "category"],
+            field_var=self.search_field_var,
+            text_var=self.search_text_var,
+            on_search=self.load_data,
+            on_reset=self._reset_search,
+            default_field="title",
         )
-        self.search_field = ttk.Combobox(
-            search_bar,
-            textvariable=self.search_field_var,
-            values=["title", "author", "isbn", "category"],
-            state="readonly",
-            width=16,
-        )
-        self.search_field.grid(row=0, column=1, padx=6, pady=6)
-
-        tk.Label(search_bar, text="Keyword", bg=COLORS["panel"], fg=COLORS["text"], font=FONTS["body"]).grid(
-            row=0, column=2, sticky="w", padx=6
-        )
-        self.search_entry = tk.Entry(search_bar, textvariable=self.search_text_var, width=28, relief="flat")
-        self.search_entry.grid(row=0, column=3, padx=6, pady=6)
-
-        tk.Button(
-            search_bar,
-            text="Search",
-            command=self.load_data,
-            bg=COLORS["primary"],
-            fg="white",
-            activebackground=COLORS["primary_dark"],
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=4, padx=6)
-
-        tk.Button(
-            search_bar,
-            text="Reset",
-            command=self._reset_search,
-            bg=COLORS["secondary"],
-            fg="white",
-            activebackground="#475569",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=5, padx=6)
-
-        search_bar.columnconfigure(6, weight=1)
 
         content = tk.Frame(self, bg=COLORS["bg"])
         content.pack(fill="both", expand=True, padx=24, pady=(0, 20))
@@ -90,46 +54,17 @@ class BooksFrame(BaseModuleFrame):
         self.quantity_entry = self.labeled_entry(form, "Quantity", 6, 0)
         self.shelf_entry = self.labeled_entry(form, "Shelf Location", 6, 1)
 
-        action_row = tk.Frame(form, bg=COLORS["panel"])
-        action_row.grid(row=8, column=0, columnspan=2, sticky="ew", padx=8, pady=(12, 0))
-        action_row.columnconfigure((0, 1, 2, 3), weight=1)
-
-        tk.Button(
-            action_row,
-            text="Add",
-            command=self.add_book,
-            bg=COLORS["success"],
-            fg="white",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=0, sticky="ew", padx=3)
-        tk.Button(
-            action_row,
-            text="Update",
-            command=self.update_book,
-            bg=COLORS["warning"],
-            fg="white",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=1, sticky="ew", padx=3)
-        tk.Button(
-            action_row,
-            text="Delete",
-            command=self.delete_book,
-            bg=COLORS["danger"],
-            fg="white",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=2, sticky="ew", padx=3)
-        tk.Button(
-            action_row,
-            text="Clear",
-            command=self.clear_form,
-            bg=COLORS["secondary"],
-            fg="white",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=3, sticky="ew", padx=3)
+        self.build_action_row(
+            form,
+            row=8,
+            columnspan=2,
+            actions=[
+                ("Add", self.add_book, COLORS["success"]),
+                ("Update", self.update_book, COLORS["warning"]),
+                ("Delete", self.delete_book, COLORS["danger"]),
+                ("Clear", self.clear_form, COLORS["secondary"]),
+            ],
+        )
 
         right = tk.Frame(content, bg=COLORS["panel"], bd=0, highlightthickness=1, highlightbackground="#22314f")
         right.pack(side="right", fill="both", expand=True)
@@ -297,11 +232,7 @@ class BooksFrame(BaseModuleFrame):
         self.load_data()
 
     def sort_by(self, column: str) -> None:
-        if self.sort_column == column:
-            self.sort_ascending = not self.sort_ascending
-        else:
-            self.sort_column = column
-            self.sort_ascending = True
+        self.update_sort_state(column)
         self.load_data()
 
     def on_select(self, event) -> None:

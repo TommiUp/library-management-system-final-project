@@ -24,49 +24,15 @@ class UsersFrame(BaseModuleFrame):
             "User Management",
             "Create staff accounts, update roles, and keep access control inside the app.",
         )
-
-        controls = tk.Frame(self, bg=COLORS["panel"], padx=18, pady=14)
-        controls.pack(fill="x", padx=24, pady=(0, 16))
-
-        tk.Label(controls, text="Search By", bg=COLORS["panel"], fg=COLORS["text"], font=FONTS["body"]).grid(
-            row=0, column=0, sticky="w", padx=6
+        
+        self.build_search_bar(
+            fields=["username", "role", "created_at"],
+            field_var=self.search_field_var,
+            text_var=self.search_text_var,
+            on_search=self.load_data,
+            on_reset=self._reset_search,
+            default_field="username",
         )
-        self.search_field = ttk.Combobox(
-            controls,
-            textvariable=self.search_field_var,
-            values=["username", "role", "created_at"],
-            state="readonly",
-            width=16,
-        )
-        self.search_field.grid(row=0, column=1, padx=6, pady=6)
-
-        tk.Label(controls, text="Keyword", bg=COLORS["panel"], fg=COLORS["text"], font=FONTS["body"]).grid(
-            row=0, column=2, sticky="w", padx=6
-        )
-        self.search_entry = tk.Entry(controls, textvariable=self.search_text_var, width=28, relief="flat")
-        self.search_entry.grid(row=0, column=3, padx=6, pady=6)
-
-        tk.Button(
-            controls,
-            text="Search",
-            command=self.load_data,
-            bg=COLORS["primary"],
-            fg="white",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=4, padx=6)
-
-        tk.Button(
-            controls,
-            text="Reset",
-            command=self._reset_search,
-            bg=COLORS["secondary"],
-            fg="white",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=5, padx=6)
-
-        controls.columnconfigure(6, weight=1)
 
         content = tk.Frame(self, bg=COLORS["bg"])
         content.pack(fill="both", expand=True, padx=24, pady=(0, 20))
@@ -93,46 +59,16 @@ class UsersFrame(BaseModuleFrame):
         )
         self.role_combo.grid(row=7, column=0, sticky="ew", padx=8, pady=(0, 8))
 
-        actions = tk.Frame(form, bg=COLORS["panel"])
-        actions.grid(row=8, column=0, sticky="ew", padx=8, pady=(12, 0))
-        actions.columnconfigure((0, 1, 2, 3), weight=1)
-
-        tk.Button(
-            actions,
-            text="Add",
-            command=self.add_user,
-            bg=COLORS["success"],
-            fg="white",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=0, sticky="ew", padx=3)
-        tk.Button(
-            actions,
-            text="Update",
-            command=self.update_user,
-            bg=COLORS["warning"],
-            fg="white",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=1, sticky="ew", padx=3)
-        tk.Button(
-            actions,
-            text="Delete",
-            command=self.delete_user,
-            bg=COLORS["danger"],
-            fg="white",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=2, sticky="ew", padx=3)
-        tk.Button(
-            actions,
-            text="Clear",
-            command=self.clear_form,
-            bg=COLORS["secondary"],
-            fg="white",
-            relief="flat",
-            font=FONTS["button"],
-        ).grid(row=0, column=3, sticky="ew", padx=3)
+        self.build_action_row(
+            form,
+            row=8,
+            actions=[
+                ("Add", self.add_user, COLORS["success"]),
+                ("Update", self.update_user, COLORS["warning"]),
+                ("Delete", self.delete_user, COLORS["danger"]),
+                ("Clear", self.clear_form, COLORS["secondary"]),
+            ],
+        )
 
         note = tk.Label(
             form,
@@ -259,7 +195,11 @@ class UsersFrame(BaseModuleFrame):
             messagebox.showerror("Error", str(exc))
 
     def load_data(self) -> None:
-        users = self.db.fetch_users(self.search_text_var.get(), self.search_field_var.get(), self.sort_column, self.sort_ascending)
+        users = self.db.fetch_users(
+            self.search_text_var.get(),
+            self.search_field_var.get(),
+            self.sort_column,
+            self.sort_ascending)
         self.fill_treeview(
             self.tree,
             [(user["id"], user["username"], user["role"], user["created_at"]) for user in users],
@@ -269,11 +209,7 @@ class UsersFrame(BaseModuleFrame):
         self.load_data()
 
     def sort_by(self, column: str) -> None:
-        if self.sort_column == column:
-            self.sort_ascending = not self.sort_ascending
-        else:
-            self.sort_column = column
-            self.sort_ascending = True
+        self.update_sort_state(column)
         self.load_data()
 
     def on_select(self, event) -> None:
