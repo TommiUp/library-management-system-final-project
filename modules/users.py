@@ -195,7 +195,11 @@ class UsersFrame(BaseModuleFrame):
             messagebox.showerror("Error", str(exc))
 
     def load_data(self) -> None:
-        users = self.db.fetch_users(self.search_text_var.get(), self.search_field_var.get(), self.sort_column, self.sort_ascending)
+        users = self.db.fetch_users(
+            self.search_text_var.get(),
+            self.search_field_var.get(),
+            self.sort_column,
+            self.sort_ascending)
         self.fill_treeview(
             self.tree,
             [(user["id"], user["username"], user["role"], user["created_at"]) for user in users],
