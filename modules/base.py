@@ -42,8 +42,6 @@ class BaseModuleFrame(tk.Frame):
         self.app = app
         self.db = db
         self.selected_id = None
-        self._sort_column = None
-        self._sort_ascending = True
 
     def build_heading(self, title: str, subtitle: str = "") -> tk.Frame:
         container = tk.Frame(self, bg=COLORS["bg"])
@@ -94,6 +92,7 @@ class BaseModuleFrame(tk.Frame):
             font=FONTS["card_value"],
         )
         value_label.pack(anchor="w", padx=16, pady=(0, 16))
+        
         return card
     
     def build_search_bar(
