@@ -54,7 +54,7 @@ class UsersFrame(BaseModuleFrame):
         self.role_combo = ttk.Combobox(
             form,
             textvariable=self.role_var,
-            values=["admin", "staff"],
+            values=["admin", "staff", "student"],
             state="readonly",
         )
         self.role_combo.grid(row=7, column=0, sticky="ew", padx=8, pady=(0, 8))
