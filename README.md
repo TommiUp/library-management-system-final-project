@@ -120,6 +120,13 @@ library_management_system/
 - Up to 14 days: no fine
 - After the due date: 10 taka per day
 
+## Running Tests
+
+- Run the automated tests with:
+```bash
+python -m pytest -v
+```
+
 ## Screenshots
 
 Add screenshots here after running the application.

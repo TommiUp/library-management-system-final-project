@@ -105,6 +105,7 @@ class LibraryApp(tk.Tk):
             self.login_error_message = "Invalid username or password."
             return False
 
+        # Student accounts are stored for future use but cannot access the admin panel itself.
         if user.get("role") == "student":
             self.login_error_title = "Access Denied"
             self.login_error_message = "Student accounts cannot access the admin panel."

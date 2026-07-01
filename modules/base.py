@@ -104,6 +104,11 @@ class BaseModuleFrame(tk.Frame):
         on_reset: Callable[[], None],
         default_field: str | None = None,
     ) -> tk.Frame:
+        """Build the shared search bar I used in the UI refactoring.
+
+        I use this in the module screens so the same search bar code does not
+        need to be repeated in Books, Members, Users, and Students.
+        """
         search_bar = tk.Frame(self, bg=COLORS["panel"], padx=18, pady=14)
         search_bar.pack(fill="x", padx=24, pady=(0, 16))
 
@@ -179,6 +184,11 @@ class BaseModuleFrame(tk.Frame):
         column: int = 0,
         columnspan: int = 1,
     ) -> tk.Frame:
+        """Build the shared action button row I used in the UI refactoring.
+
+        This keeps the common Add, Update, Delete, and Clear button layout in
+        one place instead of repeating it in each module screen.
+        """
         action_row = tk.Frame(parent, bg=COLORS["panel"])
         action_row.grid(
             row=row,
@@ -206,6 +216,7 @@ class BaseModuleFrame(tk.Frame):
         return action_row
 
     def update_sort_state(self, column: str) -> None:
+        """Handle the shared table sorting logic I reused in the refactored screens."""
         if self.sort_column == column:
             self.sort_ascending = not self.sort_ascending
         else:

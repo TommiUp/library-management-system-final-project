@@ -1,3 +1,4 @@
+"""Regression tests for behavior that should not break later."""
 import pytest
 
 

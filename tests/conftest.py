@@ -1,3 +1,8 @@
+"""Shared pytest setup for the project tests.
+
+I added this file for the testing task so tests can reuse the same
+temporary database and sample data.
+"""
 import pytest
 
 from modules.database import LibraryDatabase
@@ -5,6 +10,7 @@ from modules.database import LibraryDatabase
 
 @pytest.fixture()
 def test_db(tmp_path):
+    """Create a temporary database so tests do not modify the real library.db."""
     return LibraryDatabase(str(tmp_path / "test_library.db"))
 
 
