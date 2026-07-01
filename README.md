@@ -57,6 +57,7 @@ The project uses:
 - SQLite3
 - Pillow
 - Matplotlib
+- Pytest
 
 ## Database Information
 
