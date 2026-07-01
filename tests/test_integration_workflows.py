@@ -1,3 +1,4 @@
+"""Integration tests for full database workflows."""
 def test_student_with_linked_account_can_be_created_and_deleted(test_db, sample_student_data):
     account = {
         "username": "student",

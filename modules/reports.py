@@ -52,6 +52,7 @@ REPORT_COLUMNS = {
         "address",
         "join_date",
     ],
+    # Student Report was added with the Student Management feature.
     "Student Report": [
         "student_code",
         "full_name",

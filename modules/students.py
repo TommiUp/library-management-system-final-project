@@ -7,8 +7,12 @@ from modules.base import BaseModuleFrame, COLORS, FONTS
 
 
 class StudentsFrame(BaseModuleFrame):
-    """Student management screen."""
+    """Student Management screen added as the new feature.
 
+    This screen shows student records through the UI and reuses the same
+    patterns as the existing Books and Members screens.
+    """
+    
     def __init__(self, parent: tk.Widget, app, db) -> None:
         super().__init__(parent, app, db)
         self.selected_student_id = None
@@ -190,6 +194,7 @@ class StudentsFrame(BaseModuleFrame):
         return True
 
     def _build_account_payload(self, account_data: dict, is_update: bool = False) -> dict | None:
+        """Check optional student login account fields before saving."""
         username = account_data["username"]
         password = account_data["password"]
         confirm_password = account_data["confirm_password"]
@@ -225,12 +230,14 @@ class StudentsFrame(BaseModuleFrame):
 
         if not self._validate_student_data(student_data):
             return
-
+        
         has_account_input = any(
         account_data[field]
         for field in ("username", "password", "confirm_password")
         )
+        
         account = self._build_account_payload(account_data, is_update=False)
+        # If any account field was used, validation must succeed before saving.
         if has_account_input and account is None:
             return
 
@@ -259,6 +266,7 @@ class StudentsFrame(BaseModuleFrame):
         )
 
         account = self._build_account_payload(account_data, is_update=True)
+        # If any account field was used, validation must succeed before saving.
         if has_account_input and account is None:
             return
 

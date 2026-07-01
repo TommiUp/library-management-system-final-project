@@ -1,3 +1,4 @@
+"""Unit tests for smaller database helper functions."""
 from modules.database import LibraryDatabase
 
 
