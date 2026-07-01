@@ -9,6 +9,8 @@ A fully offline desktop Library Management System built with Python 3, Tkinter, 
 - Book management with add, update, delete, search, and sorting
 - Member management with add, update, delete, search, and sorting
 - Student management with add, update, delete, search, and sorting
+- Optional linked student login accounts
+- Student accounts are blocked from accessing the admin panel
 - Issue and return workflow with automatic due dates and fines
 - Reports for available books, issued books, overdue books, members, students, and fines
 - CSV export for reports
@@ -54,6 +56,7 @@ The project uses:
 - Tkinter
 - SQLite3
 - Pillow
+- Matplotlib
 
 ## Database Information
 
@@ -136,3 +139,4 @@ Add screenshots here after running the application.
 - The application runs fully offline.
 - SQLite is the only database engine used.
 - A custom `assets/logo.png` file is optional. If it is missing, the app shows a fallback logo.
+- Student Management was added as an extension feature.

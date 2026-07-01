@@ -52,6 +52,18 @@ REPORT_COLUMNS = {
         "address",
         "join_date",
     ],
+    "Student Report": [
+        "student_code",
+        "full_name",
+        "class_name",
+        "section",
+        "roll_no",
+        "email",
+        "phone",
+        "address",
+        "account_username",
+        "join_date",
+    ],
     "Fine Report": [
         "id",
         "book_code",
@@ -83,7 +95,7 @@ class ReportsFrame(BaseModuleFrame):
     def _build_ui(self) -> None:
         self.build_heading(
             "Reports",
-            "Generate availability, issue, overdue, member, and fine reports. Export any report to CSV.",
+            "Generate availability, issue, overdue, member, student, and fine reports. Export any report to CSV.",
         )
 
         controls = tk.Frame(self, bg=COLORS["panel"], padx=18, pady=14)
@@ -150,6 +162,7 @@ class ReportsFrame(BaseModuleFrame):
             "Issued Books": self.db.report_issued_books,
             "Overdue Books": self.db.report_overdue_books,
             "Member Report": self.db.report_members,
+            "Student Report": self.db.report_students,
             "Fine Report": self.db.report_fines,
         }
 

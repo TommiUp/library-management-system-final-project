@@ -120,6 +120,7 @@ class LoginFrame(tk.Frame):
     def _attempt_login(self) -> None:
         username = self.username_entry.get().strip()
         password = self.password_entry.get().strip()
+
         if not username or not password:
             messagebox.showwarning("Login Required", "Please enter both username and password.")
             return
@@ -127,4 +128,7 @@ class LoginFrame(tk.Frame):
         if self.app.handle_login(username, password):
             return
 
-        messagebox.showerror("Login Failed", "Invalid username or password.")
+        messagebox.showerror(
+            self.app.login_error_title,
+            self.app.login_error_message,
+        )

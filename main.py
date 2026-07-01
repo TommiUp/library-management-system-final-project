@@ -10,6 +10,7 @@ from modules.dashboard import DashboardFrame
 from modules.issue_books import IssueBooksFrame
 from modules.login import LoginFrame
 from modules.members import MembersFrame
+from modules.students import StudentsFrame
 from modules.reports import ReportsFrame
 from modules.settings import SettingsFrame
 from modules.users import UsersFrame
@@ -30,6 +31,8 @@ class LibraryApp(tk.Tk):
         self.current_user = None
         self.shell = None
         self.login_frame = None
+        self.login_error_title = "Login Failed"
+        self.login_error_message = "Invalid username or password."
 
         self._configure_styles()
 
@@ -98,7 +101,17 @@ class LibraryApp(tk.Tk):
     def handle_login(self, username: str, password: str) -> bool:
         user = self.db.authenticate_user(username, password)
         if not user:
+            self.login_error_title = "Login Failed"
+            self.login_error_message = "Invalid username or password."
             return False
+
+        if user.get("role") == "student":
+            self.login_error_title = "Access Denied"
+            self.login_error_message = "Student accounts cannot access the admin panel."
+            return False
+
+        self.login_error_title = "Login Failed"
+        self.login_error_message = "Invalid username or password."
         self.current_user = user
         self.show_shell()
         return True
@@ -123,6 +136,7 @@ class ShellFrame(tk.Frame):
             "dashboard": DashboardFrame,
             "books": BooksFrame,
             "members": MembersFrame,
+            "students": StudentsFrame,
             "issues": IssueBooksFrame,
             "reports": ReportsFrame,
             "settings": SettingsFrame,
@@ -172,6 +186,7 @@ class ShellFrame(tk.Frame):
             ("Dashboard", "dashboard"),
             ("Books", "books"),
             ("Members", "members"),
+            ("Students", "students"),
             ("Issue Books", "issues"),
             ("Reports", "reports"),
             ("Settings", "settings"),
